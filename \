@@ -1,0 +1,54 @@
+import {Container, Box} from '@mui/system'
+import Post from '../components/post'
+import { createAlova, useRequest}  from 'alova';
+import GlobalFetch from 'alova/GlobalFetch';
+import ReactHook from 'alova/react';
+import {useState,useEffect} from 'react';
+function Home() {
+
+	
+	const [posts, setPosts] = useState([])
+	const alovaInstance = createAlova({
+		statesHook:ReactHook,
+			requestAdapter: GlobalFetch(),
+		})
+	const {loading,data,error,send,onSuccess} = useRequest(
+			alovaInstance.Get('http://172.29.0.5:5000/',{})
+
+	)
+
+	onSuccess(async (data) => {
+	console.log('event from callback', data)
+	console.log('data from callback',data.data)
+	console.log('data data', data.data.data)
+	console.log('response body', data.data.body['posts'])
+	setPosts(await data.data.json())
+	}) 
+	useEffect( () =>{
+			
+			send();
+			
+		
+	},[])
+	
+		if(loading) {
+			return (
+					<Container maxwidth='xl' sx={{border: '1px solid black'}}>
+					 Request not yet complete
+					</Container>
+			)
+		}
+	else if(!loading && !error){
+		return (
+			<Container maxwidth='xl' sx={{border: '1px solid black'}}>
+				This is a homepage
+
+				{data.map(post => <Post caption={post.caption}/>)}
+			
+			</Container>
+		)
+	}
+}
+
+
+export default Home
